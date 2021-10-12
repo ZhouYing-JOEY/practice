@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='./jscode.js'></script>
+    <script src='./eventEmiter2.js'></script>
+</head>
+<body>
+    <input id='ipt' type="text" >
+    <script>
+        const ipt = document.getElementById('ipt')
+        ipt.addEventListener('input',throttle(function(e){
+            console.log(e.target.value)
+        },3000))
+
+        const exampleArr1 = [3,4,10,2,5,3,6,5,1]
+        function sum (arr = []) {
+            return myReduce(arr,(acc,cur) => acc+cur)
+        }
+        console.log('myReduce',sum(exampleArr1))
+
+
+        const exampleArr2 = [1,[3,4],[2,[5],6]]
+        console.log('flatten',flatten(exampleArr2))
+        console.log('unique',unique(exampleArr1))
+        console.log('myFind',myFind(exampleArr1,(a) => a%5 === 0 ))
+        console.log('chunk',chunk(exampleArr1,5))
+        console.log('mySlice',mySlice(exampleArr1,3,7))
+
+        function ExampleFn(x,y){
+            this.x= x;
+            this.y=y;
+            console.log(this.x,this.y)
+        }
+        const ExampleFnObj1 = myNew(ExampleFn,1,2);
+        console.log('ExampleFnObj',ExampleFnObj1)
+        const ExampleFnObj2 = new ExampleFn();
+        const ExampleFnObj3 = ExampleFn.prototype
+        console.log('myInstanceOf',myInstanceOf(ExampleFn,ExampleFnObj2))
+        console.log('myInstanceOf',myInstanceOf(ExampleFn,ExampleFnObj3))
+
+        //es5继承 组合继承
+        function Fn1(x,y) {
+            this.x=x;
+            this.y=y;
+            this.name={
+                a:'8'
+            }
+        }
+        Fn1.prototype.sum = function(){
+            console.log(this.x+this.y,'es5')
+        }
+
+        const examObj1 = new Fn1()
+        const examObj11 = new Fn1()
+        examObj1.name='9'
+        console.log(examObj1.name,'组合继承')
+        console.log(examObj11.name,'组合继承')
+        console.log(examObj11.name,'组合继承111')
+        examObj1.sum()
+        examObj11.sum()
+
+        // es6继承
+        class Fn2{
+            vars = 'vars'
+            constructor(x,y){
+                this.x=x;
+                this.y=y;
+                this.say = () => {
+                    console.log(this.x+this.y)
+                }
+            }
+            sum(){
+                console.log(this.x+this.y,'es6')
+            }
+            static sum1(){
+                console.log(this.x+this.y,'es6')
+            }
+        }
+        const examObj2 = new Fn2(5,4)
+        examObj2.sum()
+        // examObj2.sum1() //私有变量不能被实例访问
+        examObj2.say() 
+        console.log(examObj2.vars)
+
+        class Fn2Child extends Fn2{
+            constructor(x,y){
+                super();
+                this.x=x;
+                this.y=y;
+                this.say = () => super.sum(x,y)
+            }
+            sum(){
+                console.log(this.x+this.y,'Fn2Child')
+            }
+        }
+        const examObj3 = new Fn2Child(5,4)
+        examObj3.sum()
+        examObj3.say()
+        console.log(examObj3.vars)
+        // examObj2.sum1() // 私有变量不能被继承
+
+        // 寄生式继承
+        function Father(x){
+            this.x=x
+        }
+        function Child(){
+            Father.call(this)
+        }
+        Child.prototype = Object.create(Father.prototype)
+        Child.prototype.constructor = Child
+
+        const e1 = new Child(2)
+        const e2 = new Child(4)
+        
+
+        function father1(){
+            return function(){
+                console.log(this)
+            }
+        }
+        function father2(){
+            return () => {
+                console.log(this)
+            }
+        }
+        const father3 = () =>{
+            return () => {
+                console.log(this)
+            }
+        }
+        const father4 = () =>{
+            return function(){
+                console.log(this)
+            }
+        }
+
+        examObj3.father1 = father1()
+        examObj3.father2 = father2()
+        examObj3.father3 = father3()
+        examObj3.father4 = father4()
+        examObj3.father1() //obj
+        examObj3.father2() // window
+        examObj3.father3() // window
+        examObj3.father4() //obj
+
+        age = 333
+        const ll = {
+            age:999,
+            ff: function (){
+                let age='fff'
+                return {
+                    age:0,
+                    obj:{
+                        say: () => {
+                            console.log(this.age)
+                        }
+                    },
+                }
+            }
+        }
+        
+        const s= ll.ff()
+        s.obj.say()
+
+        console.log('-----------deepclone---------------')
+        const clone = {
+            a:1,
+            b:[1,2,3],
+            c:function(){},
+            d:{a:1}
+        }
+        clone.b[3]= clone.d
+        clone.d.b = clone.b
+        const clones = myDeepClone(clone)
+        console.log(clone)
+        console.log(clones)
+        clone.a=333
+        clone.b[4]=999
+        console.log(clone)
+        console.log(clones)
+        console.log('-----------EventEmiter---------------')
+        eventEmiter = new EventEmiter()
+        eventEmiter.subcribe('pay',function(data){
+            console.log('dingyue1',data)
+        })
+        eventEmiter.subcribe('pay',function(data){
+            console.log('dingyue2',data)
+        })
+        
+        eventEmiter.subcribe('cancel',function(data){
+            console.log('cancel',data)
+        })
+        eventEmiter.emit('pay','nice2')
+        eventEmiter.unsubcribe('token_1')
+        console.log(eventEmiter.events)
+        console.log(getNum([3,2,3,4,5,2,3]),'多数元素')
+    </script>
+</body>
+</html>
